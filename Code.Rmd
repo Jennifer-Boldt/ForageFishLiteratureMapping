@@ -15,9 +15,7 @@ require(devtools)
 require(readxl)
 require(ggplot2)
 require(gridExtra)
-library(pander)
-devtools::install_github("rooperc4/GroundfishCondition")
-library("GroundfishCondition")
+
 options(width=50, width.cutoff=50, digits = 3) 
 ```
 ##PURPOSE
@@ -38,7 +36,7 @@ Next install the ForageFishLitReview package from GitHub using the devtools pack
 
 ```{r install package}
 #Install the ForageFishLitReview package
-install_github("crooper4/ForageFishLitReview")
+install_github("rooperc4/ForageFishLitReview")
 library(ForageFishLitReview)
 ```
 
