@@ -11,7 +11,7 @@ output_file: "README.md"
 
 ```{r setup,include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-require(devtools)
+library(ForageFishLitReview)
 require(readxl)
 require(ggplot2)
 require(gridExtra)
@@ -34,7 +34,7 @@ library("devtools")
 
 Next install the ForageFishLitReview package from GitHub using the devtools package function "install_github".
 
-```{r install package}
+```{r install package, eval=FALSE}
 #Install the ForageFishLitReview package
 install_github("rooperc4/ForageFishLitReview")
 library(ForageFishLitReview)
@@ -54,26 +54,31 @@ dropdowns<-read_excel(ExampleFilePath,sheet="Do Not Edit dropdown options")
 
 ```
 
+Here we read the unique values that can be chosen in the drop down menus as pressures and we turn them into a vector of the pressures. Next we take the column names for the outcomes portion of the table (these are for example the growth_rate) that will be influenced by the pressures. 
 
 ```{r identify pressures and outcomes}
-pressures<-c(unique(dropdowns[,21]))
+pressures<-c(unique(unlist(dropdowns[,21])))
                   
 outcomes<-colnames(ff_table)[22:42]
 
 ```
 
-##EXAMPLE
-As an example of calculating the condition index, we take Pacific Cod in the eastern Bering Sea. The code is designed to loop through a number of species (e.g. see the EBS_Groundfish_COndition.Rmd file which computes the index for a group of species used in the Ecosystem Considerations SAFE Chapter). For this example, we are doing only a single species, but have left the architecture for multiple species intact. Also, please note that some of the steps such as the STRATUM definitions are specific to the RACEBASE EBS data and may not be needed for other applications.
-
-Code to make figure 13
+Here we make the data using the ForageFishLitReview function "pressure_table" by subsetting the outcomes columns and counting how many times each of the pressures occurs in each column. Then we make the table a bit prettier to look like Figure 13.
 
 ```{r grep the words}
 
 
-data1<-ff_table[,22:42]
+data1<-ff_table[,which(colnames(ff_table)%in%outcomes)]
 
-print(pressure_table(pressures,data1))
-
-
+pressure_data<-pressure_table(pressures,data1)
+  
+                      
+                      
+ggplot(pressure_data, aes(x=outcome, y=pressure, col = count, fill = count, label = count)) +
+  geom_tile() +
+  geom_text(col = "black") +
+  theme_minimal() +
+  scale_fill_gradient2(low = "white", mid = "orange", high = "red") +
+  scale_color_gradient2(low = "white", mid = "orange", high = "red")
 
 ```

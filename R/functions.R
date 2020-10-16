@@ -7,6 +7,8 @@
 #' @export
 #' @examples
 #' pressure_table(c("saliity","temperature"),data[,22:32])
+require(dplyr)
+require(tidyr)
 
   pressure_table<-function(pressures,parameter_columns){
     t2<-data.frame(array(dim=c(length(pressures),length(parameter_columns))))
@@ -14,7 +16,8 @@
     for(i in 1:length(pressures)){
       t2[i,]<-apply(parameter_columns,MARGIN=2,function(x){how_many_times(pressures[i],x)})
     }
-    t2$Pressure<-pressures
+    t2$pressure<-pressures
+    t2<-pivot_longer(t2,colnames(parameter_columns),names_to="outcome",values_to="count")
     return(t2)
   }
 
