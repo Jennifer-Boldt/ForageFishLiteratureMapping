@@ -56,10 +56,13 @@ dropdowns<-read_excel(ExampleFilePath,sheet="Do Not Edit dropdown options")
 
 ```
 
+
+```{r identify pressures and outcomes}
 pressures<-c(unique(dropdowns[,21]))
                   
 outcomes<-colnames(ff_table)[22:42]
 
+```
 
 ##EXAMPLE
 As an example of calculating the condition index, we take Pacific Cod in the eastern Bering Sea. The code is designed to loop through a number of species (e.g. see the EBS_Groundfish_COndition.Rmd file which computes the index for a group of species used in the Ecosystem Considerations SAFE Chapter). For this example, we are doing only a single species, but have left the architecture for multiple species intact. Also, please note that some of the steps such as the STRATUM definitions are specific to the RACEBASE EBS data and may not be needed for other applications.
@@ -69,12 +72,9 @@ Code to make figure 13
 ```{r grep the words}
 
 
-pressures<-c(unique(dropdowns[,21]))
-                  
-outcomes<-colnames(ff_table)[22:42]
 data1<-ff_table[,22:42]
 
-View(pressure_table(pressures,data1))
+print(pressure_table(pressures,data1))
 
 
 
