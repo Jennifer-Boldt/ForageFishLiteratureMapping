@@ -23,20 +23,6 @@ devtools package function “install\_github”.
 ``` r
 #Install the ForageFishLitReview package
 install_github("rooperc4/ForageFishLitReview")
-```
-
-    ## Downloading GitHub repo rooperc4/ForageFishLitReview@master
-
-    ##          checking for file 'C:\Users\rooperc\AppData\Local\Temp\2\RtmpEpR4oJ\remotes3a6c4e5836ce\rooperc4-ForageFishLitReview-bbecf1f/DESCRIPTION' ...     checking for file 'C:\Users\rooperc\AppData\Local\Temp\2\RtmpEpR4oJ\remotes3a6c4e5836ce\rooperc4-ForageFishLitReview-bbecf1f/DESCRIPTION' ...   v  checking for file 'C:\Users\rooperc\AppData\Local\Temp\2\RtmpEpR4oJ\remotes3a6c4e5836ce\rooperc4-ForageFishLitReview-bbecf1f/DESCRIPTION' (563ms)
-    ##       -  preparing 'ForageFishLitReview':
-    ##      checking DESCRIPTION meta-information ...     checking DESCRIPTION meta-information ...   v  checking DESCRIPTION meta-information
-    ##       -  checking for LF line-endings in source and make files and shell scripts
-    ##       -  checking for empty or unneeded directories
-    ##       -  building 'ForageFishLitReview_0.0.0.9000.tar.gz'
-    ##      
-    ## 
-
-``` r
 library(ForageFishLitReview)
 ```
 
@@ -57,57 +43,35 @@ ff_table<-read_excel(ExampleFilePath,sheet="Example 2")
 dropdowns<-read_excel(ExampleFilePath,sheet="Do Not Edit dropdown options")
 ```
 
+Here we read the unique values that can be chosen in the drop down menus
+as pressures and we turn them into a vector of the pressures. Next we
+take the column names for the outcomes portion of the table (these are
+for example the growth\_rate) that will be influenced by the pressures.
+
 ``` r
-pressures<-c(unique(dropdowns[,21]))
+pressures<-c(unique(unlist(dropdowns[,21])))
                   
 outcomes<-colnames(ff_table)[22:42]
 ```
 
-\#\#EXAMPLE As an example of calculating the condition index, we take
-Pacific Cod in the eastern Bering Sea. The code is designed to loop
-through a number of species (e.g. see the EBS\_Groundfish\_COndition.Rmd
-file which computes the index for a group of species used in the
-Ecosystem Considerations SAFE Chapter). For this example, we are doing
-only a single species, but have left the architecture for multiple
-species intact. Also, please note that some of the steps such as the
-STRATUM definitions are specific to the RACEBASE EBS data and may not be
-needed for other applications.
-
-Code to make figure 13
+Here we make the data using the ForageFishLitReview function
+“pressure\_table” by subsetting the outcomes columns and counting how
+many times each of the pressures occurs in each column. Then we make the
+table a bit prettier to look like Figure 13.
 
 ``` r
-data1<-ff_table[,22:42]
+data1<-ff_table[,which(colnames(ff_table)%in%outcomes)]
 
-print(pressure_table(pressures,data1))
+pressure_data<-pressure_table(pressures,data1)
+  
+                      
+                      
+ggplot(pressure_data, aes(x=outcome, y=pressure, col = count, fill = count, label = count)) +
+  geom_tile() +
+  geom_text(col = "black") +
+  theme_minimal() +
+  scale_fill_gradient2(low = "white", mid = "orange", high = "red") +
+  scale_color_gradient2(low = "white", mid = "orange", high = "red")
 ```
 
-    ##   DistributionHabitatUse
-    ## 1                      0
-    ##   GrowthLifeHistory_MassOrSize
-    ## 1                            0
-    ##   GrowthLifeHistory_Condition
-    ## 1                           0
-    ##   GrowthLifeHistory_Foraging
-    ## 1                          0
-    ##   GrowthLifeHistory_Other
-    ## 1                       0
-    ##   Survival_Survival&Mortality Performance_Stress
-    ## 1                           0                  0
-    ##   Performance_Energy Performance_Swimming
-    ## 1                  0                    0
-    ##   Performance_Other Migration_Spawning
-    ## 1                 0                  0
-    ##   Migration_Other Reproduction_Maturation
-    ## 1               0                       0
-    ##   Reproduction_Spawning Reproduction_EggAbundance
-    ## 1                     0                         0
-    ##   Reproduction_EggSizeOrWeight
-    ## 1                            0
-    ##   Reproduction_Fecundity Reproduction_Other
-    ## 1                      0                  0
-    ##   Productivity_BiomassOrAbundance
-    ## 1                               0
-    ##   Productivity_Recruitment Productivity_Other
-    ## 1                        0                  0
-    ##                                                                                                                                                                                                                                                                       Pressure
-    ## 1 Climate (NAO, NPGO, etc), transport (currents, etc), temperature, salinity, oxygen, upwelling (magnitude or timing), phytoplankton (primary productivity), zooplankton (secondary productivity), predators, competitors, fisheries, other pressure, not linked to a pressure
+![](Code_files/figure-gfm/grep%20the%20words-1.png)<!-- -->

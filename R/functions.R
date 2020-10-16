@@ -7,10 +7,10 @@
 #' @export
 #' @examples
 #' pressure_table(c("saliity","temperature"),data[,22:32])
-require(dplyr)
-require(tidyr)
+
 
   pressure_table<-function(pressures,parameter_columns){
+  require(tidyr)
     t2<-data.frame(array(dim=c(length(pressures),length(parameter_columns))))
     colnames(t2)<-colnames(parameter_columns)
     for(i in 1:length(pressures)){

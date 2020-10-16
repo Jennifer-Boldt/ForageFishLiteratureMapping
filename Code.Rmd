@@ -15,6 +15,9 @@ library(ForageFishLitReview)
 require(readxl)
 require(ggplot2)
 require(gridExtra)
+require(dplyr)
+require(tidyr)
+
 
 options(width=50, width.cutoff=50, digits = 3) 
 ```
