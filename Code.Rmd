@@ -79,10 +79,13 @@ pressure_data<-pressure_table(pressures,data1)
                       
                       
 ggplot(pressure_data, aes(x=outcome, y=pressure, col = count, fill = count, label = count)) +
-geom_tile() +
-geom_text(col = "black") +
-theme_minimal() +
-scale_fill_gradient2(low = "white", high = "red") +
-scale_color_gradient2(low = "white", high = "red")
+  geom_tile() +
+  geom_text(col = "black") +
+  theme_minimal() +
+  scale_fill_gradient2(low = "white", high = "red") +
+  scale_color_gradient2(low = "white", high = "red")+
+  scale_x_discrete(position = "top")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  
 
 ```
