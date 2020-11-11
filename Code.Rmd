@@ -30,8 +30,12 @@ To install the package you must use the "devtools" package from CRAN. If you hav
 
 ```{r installation, eval=FALSE}
 # Install and load devtools package
-install.packages("devtools")
+#install.packages("devtools")
 library("devtools")
+# only run if you change a function:
+#library(roxygen2)
+#library(digest)
+#document()
 
 ```
 
