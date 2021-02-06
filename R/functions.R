@@ -34,7 +34,7 @@
 #' how_many_times("salinity",data[,22:35])
 
 how_many_times<-function(pressures,parameter_columns){
-  hmt<-length(grep(pressures,parameter_columns))
+  hmt<-length(grep(pressures,parameter_columns,fixed=TRUE))
   return(hmt)}
 #########
 
