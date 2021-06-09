@@ -1,0 +1,170 @@
+---
+title: "Pressure map - summary and species specifc"
+author: "Brooke Hackett"
+date: "3/31/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# package instalation and data import 
+```{r data import}
+
+library("devtools")
+library(ForageFishLitReview)
+library(readxl)
+library(ggplot2)
+library(splitstackshape)
+library(rio)
+library(dplyr)
+library(grid)
+
+
+ff_table<-read_excel("clean_database_test_graph.xlsm",sheet="Example 2")
+
+```
+# extract list of unique pressures and outcomes from dataset 
+# this is the same for all species 
+```{r data set up}
+
+dropdowns <- read_excel("clean_database_test_graph.xlsm",sheet="Do Not Edit dropdown options")
+
+pressures <- na.omit(c(unique(unlist(dropdowns[,21]))))
+
+outcomes <- colnames(ff_table)[22:42]
+
+```
+# All species data for pressure table 
+```{r All species data}
+data <- ff_table[,which(colnames(ff_table)%in%outcomes)]
+
+```
+# Eulachon data for pressure table 
+```{r Eulachon}
+
+eulachon_table <- ff_table %>%
+  filter(`Focus species Common Name` %in% "Eulachon")
+
+data <- eulachon_table[,which(colnames(eulachon_table)%in%outcomes)]
+
+```
+# Surf Smelt data for pressure table
+```{r Surf smelt}
+surf_table <- ff_table %>%
+  filter(`Focus species Common Name` %in% "Surf Smelt")
+
+data <- surf_table[,which(colnames(surf_table)%in%outcomes)]
+  
+
+```
+# Pacific Herring data for pressure table
+```{r Pacific Herring}
+herring_table <- ff_table %>%
+  filter(`Focus species Common Name` %in% "Pacific Herring")
+
+data <- herring_table[,which(colnames(herring_table)%in%outcomes)]
+
+```
+# Whitebait Smelt data for pressure table
+```{r Whitebait Smelt}
+whitebait_table <- ff_table %>%
+  filter(`Focus species Common Name` %in% "Whitebait Smelt")
+
+data <- whitebait_table[,which(colnames(whitebait_table)%in%outcomes)]
+
+```
+
+# Longfin Smelt data for pressure table
+```{r Longfin Smelt}
+longfin_table <- ff_table %>%
+  filter(`Focus species Common Name` %in% "Longfin Smelt")
+
+data <- longfin_table[,which(colnames(longfin_table)%in%outcomes)]
+
+
+```
+
+# Prepare the pressure table 
+```{r, ptable}
+
+## prep data using the ForageFishLitReview function "pressure_table" by subsetting 
+## the outcomes columns and counting how many times each of the pressures occurs in each column
+
+pressure_data <- pressure_table(pressures,data)
+
+##split outcome data into sub category 
+
+pressure_data$outcomeforsplit<-pressure_data$outcome
+pressure_data<-cSplit(pressure_data, "outcomeforsplit", sep="_", type.convert=FALSE)
+colnames(pressure_data)<-c("pressure","outcome","count","outcome1","outcome2")
+
+##change the order in which the pressures are plotted 
+
+pressure_data$pressureOrdered = factor(pressure_data$pressure, levels=rev(c(unique(pressures))))
+
+```
+# Plot the pressure map
+```{r, pmap}
+
+## plotting the pressure_data
+
+pressure_map <- ggplot(pressure_data, aes(x=outcome2, y=pressureOrdered, col = count, fill = count, label = count)) +
+  geom_tile(color="grey") +
+  geom_text(data=subset(pressure_data,count != 0),col="black")+
+  theme_minimal() +
+  scale_fill_gradient2(low = "white", high = "red") +
+  scale_color_gradient2(low = "white", high = "red")+
+  scale_x_discrete(position = "top")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0),
+        axis.title.y = element_text(face = "bold", vjust = 3))+
+  ylab("Pressure")+
+  xlab(NULL)
+
+## adjusting subcategory labels 
+
+pressure_outcome1 <- as_labeller(c(
+  Survival = "Survival",
+  Reproduction = "Reprod.",
+  Productivity = "Prod.",
+  Performance = "Performance",
+  Migration = "Migration",
+  GrowthLifeHistory = "Growth Life History",
+  Distribution = "Distr."
+), default = label_wrap_gen(width = 15))
+
+## separating plot into the outcome subgroup facets with adjusted labels 
+
+pressure_map1 <- pressure_map + 
+  facet_grid(~ outcome1, 
+             scales = "free_x", 
+             space = "free",
+             labeller = pressure_outcome1) +
+  theme(panel.grid = element_blank(), 
+        strip.placement = "outside", 
+        panel.spacing.x = unit(0, "line"), 
+        strip.text.x = element_text(face = "bold"))
+
+pressure_map1
+
+# adding lines between facet labels 
+
+gline = linesGrob(y = c(9, 6.68),  gp = gpar(col = "black", lwd = 1)) 
+
+ pressure_map2 <- pressure_map1 + annotation_custom(gline, xmin=.4, xmax=.4, ymin=.5, ymax=2.9)
+
+g <- ggplotGrob(pressure_map2)
+
+g$layout$clip[g$layout$name=="panel-1-1"] <- "off"
+
+for (k in grep("panel",g$layout$name)) {
+  g$layout$clip[g$layout$name==g$layout$name[k]] <- "off" 
+}
+grid.draw(g)
+
+
+```
+
+
+ 
+ 
