@@ -11,6 +11,7 @@
 
   pressure_table<-function(pressures,parameter_columns){
   require(tidyr)
+    parameter_columns<-data.frame(parameter_columns)
     t2<-data.frame(array(dim=c(length(pressures),length(parameter_columns))))
     colnames(t2)<-colnames(parameter_columns)
     for(i in 1:length(pressures)){
@@ -55,6 +56,7 @@ how_many_times<-function(pressures,parameter_columns){
 
 lifestage_table<-function(lifestage,parameter_columns){
   require(tidyr)
+  parameter_columns<-data.frame(parameter_columns)
   t3<-data.frame(array(dim=c(length(lifestage),length(parameter_columns))))
   colnames(t3)<-colnames(parameter_columns)
   for(i in 1:length(lifestage)){
