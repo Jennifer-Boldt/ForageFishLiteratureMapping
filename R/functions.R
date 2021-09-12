@@ -82,7 +82,40 @@ LHS_how_many_times<-function(lifestage,parameter_columns){
   LHS_hmt<-length(grep(lifestage,parameter_columns))
   return(LHS_hmt)}
 
+#' A function to to add a row for each instance where a string occurs in a column
+#'
+#' A function to to add a row for each instance where a comma-seperated string occurs in a column (e.g. if a cell contains the string "Atlantic, Pacific, Arctic
+#' this suction will replace the row with three rows containing "Atlantic", "Pacific" and "Arctic"). This is useful when compiling summary
+#' statistics for species that occur in multiple oceans.
+#' @param data The data frame containing the rows to expand
+#' @param column_name The column name holding the string to expand the data over in quotes (e.g. "Ocean").
+#' @keywords forage fish, life stage, species common name, literature summary
+#' @export
+#' @examples
+#' expand_ocean(data, "ocean")
 
+expand_ocean<-function(data,column_name){
+  require(dplyr)
+  # data<-read.csv("C:/Users/rooperc/Desktop/Oceans.csv")
+  #  column_name<-"ocean"
+
+  datae<-NULL
+  for(i in 1:dim(data)[1]){
+    d1<-unlist(strsplit(data[i,column_name],","))
+    df<-data[i,]
+
+    if(length(d1)>1){
+      d2<-df[rep(seq_len(nrow(df)), each = length(d1)), ]
+      d2[,column]<-d1
+      #    data<-data[-i,]
+      datae<-rbind(datae,d2)}
+
+    if(length(d1)==1){
+      datae<-rbind(datae,df)}
+  }
+  return(datae)
+
+}
 
 
 
