@@ -106,7 +106,7 @@ expand_ocean<-function(data,column_name){
 
     if(length(d1)>1){
       d2<-df[rep(seq_len(nrow(df)), each = length(d1)), ]
-      d2[,column]<-d1
+      d2[,column_name]<-d1
       #    data<-data[-i,]
       datae<-rbind(datae,d2)}
 
