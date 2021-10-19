@@ -101,7 +101,7 @@ expand_ocean<-function(data,column_name){
 
   datae<-NULL
   for(i in 1:dim(data)[1]){
-    d1<-unlist(strsplit(data[i,column_name],","))
+    d1<-unlist(strsplit(data[i,column_name],", "))
     df<-data[i,]
 
     if(length(d1)>1){
