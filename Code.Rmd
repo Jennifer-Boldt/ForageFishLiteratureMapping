@@ -160,4 +160,13 @@ ggplot(lifestage_data)+
 ```
 
 
+```{r diagnoseoceanexpand}
+
+data2<-read.csv("Data_ExpandedByOcean_corespecies_nodupl2.csv",header=TRUE)
+
+test<-expand_ocean(data2,'target')
+
+```
+
+
 
