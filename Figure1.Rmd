@@ -1,7 +1,7 @@
 ---
 title: "Figure1"
 author: "Chris Rooper & Jennifer Boldt"
-date: "1/13/2022"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: pdf_document
 ---
 
@@ -17,6 +17,8 @@ library(gstat)
 library(rgeos)
 library(ggplot2)
 library(sf)
+library(tidyverse)
+library(lwgeom)
 ```
 
 ```{r figure 1 insetmethods}
@@ -27,6 +29,7 @@ bg = ne_countries(scale = "large",continent="North America",  returnclass = "sf"
 bg1<-st_transform(bg,"+proj=aea +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-115 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
 bg = ne_states(country="Canada",  returnclass = "sf")
 bg2<-st_transform(bg,"+proj=aea +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-115 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
+bg2<-bg2[,c("postal","provnum_ne")]
 
 fgdb <- "C:/github/ForageFishLitReview/eez/DFO_Marine_Bioregions.gdb" #Downloaded from https://open.canada.ca/data/en/dataset/23eb8b56-dac8-4efc-be7c-b8fa11ba62e9
 # List all feature classes in a file geodatabase
@@ -48,11 +51,6 @@ eez<-st_transform(eez,"+proj=aea +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-115 +x_0=
 data3<-data.frame(cbind(c(-67,160),c(30,75)))
 data3<-proj4::project(data3,"+proj=aea +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-115 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
 
-data1<-data.frame(c(-124,-100,-95,-68,-68,-44,-45,-70,-40),c(55,55,45,40,38,55,53,53,75))
-data1<-proj4::project(data1,"+proj=aea +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-115 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
-data1$label<-c("Pacific","Central and Arctic","USA","Gulf &", "Maritimes","Newfoundland", "& Labrador","Quebec","Greenland")
-data1<-data.frame(data1)
-
 eez<-subset(eez,eez$Label!="13")#&eez$Label!="5")
 
 eez$regions[eez$Label=="5"|eez$Label=="8"|eez$Label=="7"|eez$Label=="9"|eez$Label=="6"|eez$Label=="13"]<-"Arctic Ocean"
@@ -66,9 +64,46 @@ bg2$regions<-"Central and Arctic"
 bg2$regions[bg2$provnum_ne==2]<-"Pacific"
 bg2$regions[bg2$provnum_ne==6]<-"Newfoundland and Labrador"
 bg2$regions[bg2$provnum_ne==4]<-"Quebec"
-bg2$regions[bg2$provnum_ne==9|bg2$provnum_ne==3|bg2$provnum_ne==10]<-"Gulf and Maritimes"
+bg2$regions[bg2$provnum_ne==8]<-"Pacific"
+bg2$regions[bg2$provnum_ne==3|bg2$provnum_ne==10]<-"Maritimes"
+bg2$regions[bg2$provnum_ne==9]<-"Gulf"
 
-single_sf <- dplyr::bind_rows(list(bg2,eez))
+
+data4<-data.frame(cbind(c(-67,-55),c(40,75)))
+data4<-proj4::project(data4,"+proj=aea +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-115 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
+
+pts_sf <- data.frame(
+  x = c(-59.5,-62.8,-68.75),
+  y = c(46.25,45.15,47.75),
+  attr_data = rnorm(3,42,42),
+  id = c("fred", "fred","fred")
+) %>% 
+  sf::st_as_sf(coords = c("x","y")) %>% 
+  sf::st_set_crs(4326)
+
+pts_sf<-pts_sf %>% group_by(id) %>% summarize(m = mean(attr_data),do_union=FALSE) %>% st_cast("LINESTRING")
+
+pts_sf<-st_transform(pts_sf,"+proj=aea +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-115 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
+
+nb2<-st_split(bg2,pts_sf)
+nb3<-st_collection_extract(nb2,"POLYGON")
+
+nb3[rownames(nb3)==1303.1,"regions"]<-"Gulf"
+nb3[rownames(nb3)==2171,"regions"]<-"Gulf"
+nb3[rownames(nb3)==2171.4,"regions"]<-"Gulf"
+nb3[rownames(nb3)==2171.2,"regions"]<-"Gulf"
+nb3[rownames(nb3)==2171.3,"regions"]<-"Gulf"
+nb3[rownames(nb3)==2171.5,"regions"]<-"Gulf"
+nb3[rownames(nb3)==2171.7,"regions"]<-"Gulf"
+
+single_sf <- dplyr::bind_rows(list(nb3,eez))
+
+
+data1<-data.frame(c(-124,-100,-95,-69,-65.5,-44,-45,-70,-40),c(55,55,45,42,39.5,55,53,53,75))
+data1<-proj4::project(data1,"+proj=aea +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-115 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
+data1$label<-c("Pacific","Central and Arctic","USA","Gulf", "Maritimes","Newfoundland", "& Labrador","Quebec","Greenland")
+data1<-data.frame(data1)
+
 
 p<-ggplot()+
   #basic map
@@ -76,27 +111,29 @@ p<-ggplot()+
   coord_sf(xlim = range(data3$x, na.rm = TRUE), 
           ylim = range(data3$y, na.rm = TRUE), 
            expand = FALSE)+
-
   #colors
-  scale_fill_manual(values=c("blue","darkgreen",alpha("#042333b2",.2),alpha("#13306db2",.2),alpha("#042333b2",.6),alpha("#13306db2",.5),"purple",alpha("#042333b2",.5)))+
+  scale_fill_manual(values=c("palegreen4","steelblue4",alpha("palegreen",.2),alpha("steelblue3",.4),alpha("steelblue2",.6),alpha("steelblue2",.6),alpha("mediumorchid1",.5),"mediumorchid3",alpha("steelblue3",.4)))+
   
   #region names
   geom_text(data=data1,aes(x=x,y=y,label=label),size=3.5)+
   # lines and points
   geom_segment(aes(x=3669344.8, y= 3551466.8, xend=3282440.5,yend= 2999218.3),size=1.2,arrow=arrow(length=unit(.2,"cm")))+
-  geom_segment(aes(x=3807133.6, y= 1428977.6, xend=3482440.5,yend= 1999218.3),size=1.2,arrow=arrow(length=unit(.2,"cm")))+
+    geom_segment(aes(x=3669344.8, y= 3551466.8, xend=3882440.5,yend= 2799218.3),size=1.2,arrow=arrow(length=unit(.2,"cm")))+
+  geom_segment(aes(x=3907133.6, y= 1558977.6, xend=3682440.5,yend= 1899218.3),size=1.2,arrow=arrow(length=unit(.2,"cm")))+
+    geom_segment(aes(x=3607133.6, y= 1558977.6, xend=3382440.5,yend= 2099218.3),size=1.2,arrow=arrow(length=unit(.2,"cm")))+
  
   #manual legend
-  annotate("rect",xmin=3011465.8,xmax=3311465.8,ymin=5027385.1,ymax=5227385.1,fill = "blue")+
+  annotate("rect",xmin=3011465.8,xmax=3311465.8,ymin=5027385.1,ymax=5227385.1,fill = "palegreen4")+
   annotate("text",x=3911465.8,y=5127385.1,label = "Arctic Ocean")+
-    annotate("rect",xmin=3011465.8,xmax=3311465.8,ymin=4727385.1,ymax=4927385.1,fill = "darkgreen")+
+    annotate("rect",xmin=3011465.8,xmax=3311465.8,ymin=4727385.1,ymax=4927385.1,fill = "steelblue4")+
   annotate("text",x=3911465.8,y=4827385.1,label = "Atlantic Ocean")+
-    annotate("rect",xmin=3011465.8,xmax=3311465.8,ymin=4427385.1,ymax=4627385.1,fill = "purple")+
+    annotate("rect",xmin=3011465.8,xmax=3311465.8,ymin=4427385.1,ymax=4627385.1,fill = "mediumorchid3")+
   annotate("text",x=3911465.8,y=4527385.1,label = "Pacific Ocean")+
 
   scale_x_continuous(breaks = c(-60,-70,-80,-100, -120, -130))+
   theme_dark()+
   theme(panel.grid = element_blank())+labs(x="Longitude",y="Latitude",fill="Ocean")
+
 p
 
 
